@@ -208,6 +208,7 @@ int main(int argc, char **argv) {
   Tr.insert(points.begin(),points.end());
   Tr.insert_constraint(boundary.begin(), boundary.end(), true);
   printTriangulation(Tr, boundary, output_file);
+  
 
   //CGAL::draw(Tr);
   return EXIT_SUCCESS;

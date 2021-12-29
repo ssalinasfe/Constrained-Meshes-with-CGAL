@@ -1,0 +1,12 @@
+build/*
+build/*/*
+build/*/*/*
+!build/generatefromfile.sh
+!build/generatemesh.sh
+data/*
+data/*/*
+
+!data/LRandom.py
+
+.vscode
+.vscode/*
