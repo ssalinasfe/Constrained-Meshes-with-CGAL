@@ -13,7 +13,7 @@ cd ../build
 
 
 echo -n "Generating triangulation...\n"
-./triangulation ../data/${point_file} "../data/LR$1"
+make && ./triangulation ../data/${point_file} "../data/LR$1"
 
 
 echo -n "Generating mesh...\n"

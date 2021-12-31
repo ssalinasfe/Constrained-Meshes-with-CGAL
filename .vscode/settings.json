@@ -61,6 +61,8 @@
         "cwctype": "cpp",
         "ranges": "cpp",
         "thread": "cpp",
-        "typeindex": "cpp"
+        "typeindex": "cpp",
+        "mutex": "cpp",
+        "__functional_03": "cpp"
     }
 }
