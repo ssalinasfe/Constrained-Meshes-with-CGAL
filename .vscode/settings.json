@@ -63,6 +63,8 @@
         "thread": "cpp",
         "typeindex": "cpp",
         "mutex": "cpp",
-        "__functional_03": "cpp"
+        "__functional_03": "cpp",
+        "*.ipp": "cpp",
+        "__config": "cpp"
     }
 }
