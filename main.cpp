@@ -351,7 +351,7 @@ int main(int argc, char **argv) {
 	std::string output_file = std::string(argv[2]);
 
 
-	std::cout<<"Read "<<points.size()<<" points from file "<<argv[1]<<std::endl;
+	//std::cout<<"Read "<<points.size()<<" points from file "<<argv[1]<<std::endl;
 	unsigned seed = 138;
 
 	//Shuffle points
@@ -436,12 +436,14 @@ int main(int argc, char **argv) {
 //	}
 //	CGAL::draw(vd);
 
-	std::cout<<"Random Constrained Triangulation: "<<t_randomTr<<" ms"<<std::endl;
-	std::cout<<"Delaunay Triangulation: "<<t_delaunayTR<<" ms"<<std::endl;
-	std::cout<<"Constrained Delaunay Triangulation: "<<t_constrainedDelaunayTR<<" ms"<<std::endl;
-	std::cout<<"Voronoi adaptator: "<<t_voronoiAdaptator<<" ms"<<std::endl;
-	std::cout<<"Cut Voronoi: "<<t_cutVoronoi<<" ms"<<std::endl;
-	std::cout<<"Constrained Voronoi: "<<t_voronoiAdaptator+t_cutVoronoi<<" ms"<<std::endl;
+	//std::cout<<"Random Constrained Triangulation: "<<t_randomTr<<" ms"<<std::endl;
+	//std::cout<<"Delaunay Triangulation: "<<t_delaunayTR<<" ms"<<std::endl;
+	//std::cout<<"Constrained Delaunay Triangulation: "<<t_constrainedDelaunayTR<<" ms"<<std::endl;
+	//std::cout<<"Voronoi adaptator: "<<t_voronoiAdaptator<<" ms"<<std::endl;
+	//std::cout<<"Cut Voronoi: "<<t_cutVoronoi<<" ms"<<std::endl;
+	//std::cout<<"Constrained Voronoi: "<<t_voronoiAdaptator+t_cutVoronoi<<" ms"<<std::endl;
+
+	std::cout<<t_randomTr<<" "<<t_delaunayTR<<" "<<t_constrainedDelaunayTR<<" "<<t_voronoiAdaptator<<" "<<t_cutVoronoi<<" "<<t_voronoiAdaptator+t_cutVoronoi<<std::endl;
 
 	return EXIT_SUCCESS;
 }
