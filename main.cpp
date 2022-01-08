@@ -410,7 +410,7 @@ int main(int argc, char **argv) {
         	std::vector<Point> boundary_vertices = cut_halfedge(vd, ec, boundary_segments, boundary); //Cut the region
 			face.insert(face.end(), boundary_vertices.begin(), boundary_vertices.end());
       	}while ( ++ec != ec_start ); 
-		// Remove colliniear points, this is to avoid the problem of degenerate faces
+		// Remove colliniear points, this is to avoid the problem of degenerate faces do to the adittion of boundary points
 		for (size_t i = 0; i < face.size(); i++)
 		{
 			Point p1 = face[i];
