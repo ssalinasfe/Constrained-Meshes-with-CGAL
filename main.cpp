@@ -260,11 +260,14 @@ void printConstrainedTriangulation(ConstrainedDelaunay Tr, std::vector<Point> bo
 }
 
 
-// Cut a Voronoi cell with a boundary
+// Cut a Voronoi edge with a given boundary
 //The boundary is assumed to be polygon in ccw, 
 //boundary is a vector with the segments of the boundary and the boundary_points is a vector with the points of the boundary
+//if an edge only containts its source point inside the boundary, the edge is cut and we store the source point, the intersection and the taget of the boundary point
+//if an edge only containts its target point inside the boundary, the edge is cut and we only store its target point
 //Function return a vector with the points of the cell in ccw
-std::vector<Point> cut_region(VD &vd, VD::Halfedge_handle e, std::vector<Segment_2> &boundary, std::vector<Point> &boundary_points){
+//if the boundary containts collinear points, the should be removed after generate the cell
+std::vector<Point> cut_halfedge(VD &vd, VD::Halfedge_handle e, std::vector<Segment_2> &boundary, std::vector<Point> &boundary_points){
 	//std::cout << "\t";
 	std::vector<Point> constrained_region;
 	bool flag = false;
@@ -281,6 +284,7 @@ std::vector<Point> cut_region(VD &vd, VD::Halfedge_handle e, std::vector<Segment
 				if(CGAL::area(borderseg.source(), borderseg.target(), seg.source()) > 0){ //if source is inside the border
 					constrained_region.push_back(seg.source());
 					constrained_region.push_back(*pt);
+					constrained_region.push_back(borderseg.target()); //add the border point
 					//std::cout<<seg.source()<<" "<<*pt<<" ";
 				}else{ //target is inside the border
 					//std::cout<<"c"<<*pt<<" ";
@@ -385,6 +389,7 @@ int main(int argc, char **argv) {
 	CDT.insert_constraint(boundary.begin(), boundary.end(), true);
 	auto te_constrainedDelaunayTR = std::chrono::high_resolution_clock::now();
 	uint t_constrainedDelaunayTR = std::chrono::duration_cast<std::chrono::milliseconds>(te_constrainedDelaunayTR - tb_constrainedDelaunayTR).count();
+	//CGAL::draw(CDT);
 
 	//Voronoi diagram generation with constrains
 	VD vd;
@@ -392,26 +397,45 @@ int main(int argc, char **argv) {
 	vd.insert(points.begin(),points.end());
 	auto te_voronoiAdaptator = std::chrono::high_resolution_clock::now();
 	uint t_voronoiAdaptator = std::chrono::duration_cast<std::chrono::milliseconds>(te_voronoiAdaptator - tb_voronoiAdaptator).count();
-	int n_faces = 0;
 	std::vector<std::vector<Point>> voronoi_mesh;
 	//Cur Voronoi faces and store it a vector of vectors
 	auto tb_cutVoronoi = std::chrono::high_resolution_clock::now();
-	for(VD::Face_iterator fit = vd.faces_begin(); fit!=vd.faces_end();++fit, ++n_faces){
+	for(VD::Face_iterator fit = vd.faces_begin(); fit!=vd.faces_end();++fit){
 		VD::Face f = *fit;
 		VD::Ccb_halfedge_circulator ec_start = f.ccb(); //Start the circulator at the first edge of face
 		VD::Ccb_halfedge_circulator ec = ec_start; 
 		std::vector<Point> face;
+		//std::cout<<"Region: "<<std::endl;
 		do { //Loop through the edges of the face
-        	std::vector<Point> boundary_vertices = cut_region(vd, ec, boundary_segments, boundary); //Cut the region
+        	std::vector<Point> boundary_vertices = cut_halfedge(vd, ec, boundary_segments, boundary); //Cut the region
 			face.insert(face.end(), boundary_vertices.begin(), boundary_vertices.end());
       	}while ( ++ec != ec_start ); 
+		// Remove colliniear points, this is to avoid the problem of degenerate faces
+		for (size_t i = 0; i < face.size(); i++)
+		{
+			Point p1 = face[i];
+			Point p2 = face[(i+1)%face.size()];
+			Point p3 = face[(i+2)%face.size()];
+			if(CGAL::collinear(p1,p2,p3)){ 
+				face.erase(face.begin() + (i+1)%face.size());
+			}
+		}
+
 		voronoi_mesh.push_back(face);	
+		//std::cout<<" "<<std::endl;
 	}
 	auto te_cutVoronoi = std::chrono::high_resolution_clock::now();
 	uint t_cutVoronoi = std::chrono::duration_cast<std::chrono::milliseconds>(te_cutVoronoi - tb_cutVoronoi).count();
-	//CGAL::draw(vd);
+	
+//	for (auto region : voronoi_mesh){
+//		std::cout<<"Region: ";
+//		for(auto point : region){
+//			std::cout<<"("<<point<<") ";
+//		}
+//		std::cout<<std::endl;
+//	}
+//	CGAL::draw(vd);
 
-	//CGAL::draw(CDT);
 	std::cout<<"Random Constrained Triangulation: "<<t_randomTr<<" ms"<<std::endl;
 	std::cout<<"Delaunay Triangulation: "<<t_delaunayTR<<" ms"<<std::endl;
 	std::cout<<"Constrained Delaunay Triangulation: "<<t_constrainedDelaunayTR<<" ms"<<std::endl;
