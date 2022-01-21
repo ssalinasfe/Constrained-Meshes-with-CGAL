@@ -13,10 +13,12 @@ python3 10000x10000RandomPoints.py $1
 cd ../build
 
 
-echo -n "Generating triangulation...\n"
+#echo -n "Generating triangulation...\n"
 make && ./triangulation ../data/${point_file} "../data/square_$1"
 
 
 #echo -n "Generating mesh...\n"
-#./Polylla ../data/${node_file} ../data/${ele_file} ../data/${neigh_file} ../data/${output} && geomview -nopanels ../data/${output_off_polylla}
+./Polylla ../data/${node_file} ../data/${ele_file} ../data/${neigh_file} ../data/${output} 
 #echo "done"
+
+#geomview -nopanels ../data/${output_off_polylla}

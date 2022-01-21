@@ -30,45 +30,57 @@ def square2x2(num_points, tolerance, percentage_center_point = 0.1, radius_cente
     
     s = set()
 
-    points_in_center = int(num_points*percentage_center_point)
-    #insert in center
-    while len(s) + len(new_border) - 5 != points_in_center:
-        x = random.uniform(-1.0*radius_center, 1.0*radius_center )
-        y = random.uniform(-1.0*radius_center, 1.0*radius_center )
-        pt = Point(x,y)
-        
-        if(poly.contains(pt) and numpy.sqrt(x*x + y*y) <= (radius_center)*(radius_center) ):
-            #distance = numpy.round(poly.boundary.distance(pt), len(str(tolerance))-1 )
-            if( poly.boundary.distance(pt) < tolerance*radius_center):
-                border_pt = poly.exterior.interpolate(poly.boundary.project(pt))
-                #border_pt = nearest_points(poly, pt)
-                #s.add((border_pt[0].x, border_pt[0].y))
-                insert_border_ccw(new_border, border_pt)
-            else:
-                s.add((x, y))
-
-    insert_border_ccw(new_border, Point(0.02, 0.2))
-    insert_border_ccw(new_border, Point(0.02, 0.0))
-    insert_border_ccw(new_border, Point(0.01, 0.0))
-    insert_border_ccw(new_border, Point(0.001, 0.0))
-    insert_border_ccw(new_border, Point(0.0001, 0.0))
-
-    
+    #points_in_center = int(num_points*percentage_center_point)
+    ##insert in center
+    #while len(s) + len(new_border) - 5 != points_in_center:
+    #    x = random.uniform(-1.0*radius_center, 1.0*radius_center )
+    #    y = random.uniform(-1.0*radius_center, 1.0*radius_center )
+    #    pt = Point(x,y)
+    #    
+    #    if(poly.contains(pt) and numpy.sqrt(x*x + y*y) <= (radius_center)*(radius_center) ):
+    #        #distance = numpy.round(poly.boundary.distance(pt), len(str(tolerance))-1 )
+    #        if( poly.boundary.distance(pt) < tolerance*radius_center):
+    #            border_pt = poly.exterior.interpolate(poly.boundary.project(pt))
+    #            #border_pt = nearest_points(poly, pt)
+    #            #s.add((border_pt[0].x, border_pt[0].y))
+    #            insert_border_ccw(new_border, border_pt)
+    #        else:
+    #            s.add((x, y))
+#
+    #insert_border_ccw(new_border, Point(0.02, 0.2))
+    #insert_border_ccw(new_border, Point(0.02, 0.0))
+    #insert_border_ccw(new_border, Point(0.01, 0.0))
+    #insert_border_ccw(new_border, Point(0.001, 0.0))
+    #insert_border_ccw(new_border, Point(0.0001, 0.0))
+#
+    #
+#
+    #while len(s) + len(new_border) != num_points:
+    #    x = random.uniform(-1.0, 1.0 )
+    #    y = random.uniform(-1.0, 1.0 )
+    #    pt = Point(x,y)
+    #    if(poly.contains(pt) and numpy.sqrt(x*x + y*y) > (radius_center)*(radius_center) ):
+    #        #distance = numpy.round(poly.boundary.distance(pt), len(str(tolerance))-1 )
+    #        if( poly.boundary.distance(pt) < tolerance):
+    #            border_pt = poly.exterior.interpolate(poly.boundary.project(pt))
+    #            #border_pt = nearest_points(poly, pt)
+    #            #s.add((border_pt[0].x, border_pt[0].y))
+    #            insert_border_ccw(new_border, border_pt)
+    #        else:
+    #            s.add((x, y))
 
     while len(s) + len(new_border) != num_points:
         x = random.uniform(-1.0, 1.0 )
         y = random.uniform(-1.0, 1.0 )
         pt = Point(x,y)
-        if(poly.contains(pt) and numpy.sqrt(x*x + y*y) > (radius_center)*(radius_center) ):
-            #distance = numpy.round(poly.boundary.distance(pt), len(str(tolerance))-1 )
-            if( poly.boundary.distance(pt) < tolerance):
-                border_pt = poly.exterior.interpolate(poly.boundary.project(pt))
-                #border_pt = nearest_points(poly, pt)
-                #s.add((border_pt[0].x, border_pt[0].y))
-                insert_border_ccw(new_border, border_pt)
-            else:
-                s.add((x, y))
-
+        if( poly.boundary.distance(pt) < tolerance):
+            border_pt = poly.exterior.interpolate(poly.boundary.project(pt))
+            #border_pt = nearest_points(poly, pt)
+            #s.add((border_pt[0].x, border_pt[0].y))
+            insert_border_ccw(new_border, border_pt)
+        else:
+            s.add((x, y))
+            
     write_node(new_border + list(s),tolerance, percentage_center_point, radius_center)
 
 

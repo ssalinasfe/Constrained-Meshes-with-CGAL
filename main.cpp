@@ -1,3 +1,6 @@
+#define BOOST_BIND_NO_PLACEHOLDERS
+
+
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/IO/Color.h>
@@ -8,6 +11,7 @@
 #include <CGAL/Constrained_triangulation_2.h>
 #include <CGAL/draw_triangulation_2.h>
 #include <CGAL/intersections.h>
+#include <CGAL/Regular_triangulation_2.h>
 #include <fstream>
 #include <iterator>
 #include <array>
@@ -22,14 +26,17 @@
 #include <cctype>
 #include <iomanip>
 
+
 struct ElementInfo
 {
 	int index;
 	bool border = false;
 };
 
-
+//Used for all
 typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+
+//Used for the random triangulation
 typedef CGAL::Triangulation_vertex_base_with_info_2<ElementInfo, K>    Vb;
 typedef CGAL::Triangulation_face_base_with_info_2<ElementInfo,K> Fbb;//era fb
 typedef CGAL::Constrained_triangulation_face_base_2<K,Fbb> Fb;  //added
@@ -50,6 +57,16 @@ typedef ConstrainedDelaunay::Constrained_edges_iterator Constrained_edges_iterat
 typedef ConstrainedDelaunay::Face_handle Face_handle;
 typedef ConstrainedDelaunay::Edge Edge;
 typedef ConstrainedDelaunay::Point Point;
+
+//Regular triangulation
+typedef CGAL::Regular_triangulation_vertex_base_2<K>                   Vbase;
+typedef CGAL::Triangulation_vertex_base_with_info_2<ElementInfo, K,Vbase> VbR;
+typedef CGAL::Regular_triangulation_face_base_2<K>                     FbR;
+typedef CGAL::Triangulation_data_structure_2<VbR,FbR>                    TdsR;
+typedef CGAL::Regular_triangulation_2<K, TdsR>                          Regular;
+typedef K::Point_2                                                     Point;
+typedef K::Weighted_point_2                                            Wpoint;
+
 
 //typedefs for Cropped Voronoi
 typedef CGAL::Delaunay_triangulation_2<K>  Delaunay;
@@ -208,12 +225,12 @@ void printConstrainedTriangulation(ConstrainedTriangulation Tr, std::vector<Poin
 		}
 	}
 
-	std::cout<<"Printing mesh with "<<index<<" faces and "<< Tr.number_of_vertices() <<" vertices"<<std::endl;
+	//std::cout<<"Printing mesh with "<<index<<" faces and "<< Tr.number_of_vertices() <<" vertices"<<std::endl;
 	print_off(Tr, output_file, index);
 	print_node_file(Tr, output_file);
 	print_ele_file(Tr, output_file, index);
 	print_neigh_file(Tr, output_file, index);
-	std::cout<<"Printed files in "<<output_file<<std::endl;
+	//std::cout<<"Printed files in "<<output_file<<std::endl;
 }
 
 //Print a constrained Triangulation TR with a constrained boundaryu as a node file, ele file, neigh file and off file for vizualization
@@ -251,14 +268,71 @@ void printConstrainedTriangulation(ConstrainedDelaunay Tr, std::vector<Point> bo
 		}
 	}
 
-	std::cout<<"Printing mesh with "<<index<<" faces and "<< Tr.number_of_vertices() <<" vertices"<<std::endl;
+	//std::cout<<"Printing mesh with "<<index<<" faces and "<< Tr.number_of_vertices() <<" vertices"<<std::endl;
 	print_off(Tr, output_file, index);
 	print_node_file(Tr, output_file);
 	print_ele_file(Tr, output_file, index);
 	print_neigh_file(Tr, output_file, index);
-	std::cout<<"Printed files in "<<output_file<<std::endl;
+	//std::cout<<"Printed files in "<<output_file<<std::endl;
 }
 
+
+void printRegularOFF(Regular Rtr, std::vector<Point> non_hidden_points, std::string output_file){
+	std::ofstream outfile(output_file + "_regular.off");
+	outfile<<"OFF"<<std::endl;
+	outfile<<Rtr.number_of_vertices()<<" "<<Rtr.number_of_faces()<<" "<<0<<std::endl;
+	
+  	for (auto v : non_hidden_points){
+		outfile<<v.x()<<" "<<v.y()<<" "<<0<<std::endl;
+	}
+
+	for (auto it = Rtr.finite_faces_begin(); it != Rtr.finite_faces_end(); it++)
+	{
+		int v1 = std::distance(non_hidden_points.begin(), std::find(non_hidden_points.begin(), non_hidden_points.end(), it->vertex(0)->point()) );
+		int v2 = std::distance(non_hidden_points.begin(), std::find(non_hidden_points.begin(), non_hidden_points.end(), it->vertex(1)->point()) );
+		int v3 = std::distance(non_hidden_points.begin(), std::find(non_hidden_points.begin(), non_hidden_points.end(), it->vertex(2)->point()) );
+		outfile<<"3 "<<v1<<" "<<v2<<" "<<v3<<std::endl;
+	}
+	outfile.close();
+}
+
+void printDelaunayOFF(Delaunay Tr, std::vector<Point> points, std::string output_file){
+	std::ofstream outfile(output_file + "_delaunay.off");
+	outfile<<"OFF"<<std::endl;
+	outfile<<Tr.number_of_vertices()<<" "<<Tr.number_of_faces()<<" "<<0<<std::endl;
+
+  	for (auto v : points){
+		outfile<<v.x()<<" "<<v.y()<<" "<<0<<std::endl;
+	}
+
+	for (auto it = Tr.finite_faces_begin(); it != Tr.finite_faces_end(); it++)
+	{
+		int v1 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(0)->point()) );
+		int v2 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(1)->point()) );
+		int v3 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(2)->point()) );
+		outfile<<"3 "<<v1<<" "<<v2<<" "<<v3<<std::endl;
+	}
+	outfile.close();
+}
+
+void printRandomOFF(ConstrainedTriangulation Tr, std::vector<Point> points, std::string output_file){
+	std::ofstream outfile(output_file + "_randomTR.off");
+	outfile<<"OFF"<<std::endl;
+	outfile<<Tr.number_of_vertices()<<" "<<Tr.number_of_faces()<<" "<<0<<std::endl;
+
+  	for (auto v : points){
+		outfile<<v.x()<<" "<<v.y()<<" "<<0<<std::endl;
+	}
+
+	for (auto it = Tr.finite_faces_begin(); it != Tr.finite_faces_end(); it++)
+	{
+		int v1 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(0)->point()) );
+		int v2 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(1)->point()) );
+		int v3 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(2)->point()) );
+		outfile<<"3 "<<v1<<" "<<v2<<" "<<v3<<std::endl;
+	}
+	outfile.close();
+}
 
 // Cut a Voronoi edge with a given boundary
 //The boundary is assumed to be polygon in ccw, 
@@ -364,7 +438,34 @@ int main(int argc, char **argv) {
 		boundary_segments.push_back(s);
 	}
 
+	std::default_random_engine myRandomEngine(seed);
+    // Initialize a uniform_int_distribution to produce values between -10 and 10
+    std::uniform_int_distribution<int> myUnifIntDist(-12, 12);
+    
+	std::vector<Wpoint> weighted_points(points.size());
+	for(size_t i = 0; i < points.size(); i++){
+		weighted_points[i] = Wpoint(points[i], myUnifIntDist(myRandomEngine));
+	}
+
+	//Regular triangulation generation
+	Regular Rtr(weighted_points.begin(), weighted_points.end());
+	CGAL::draw(Rtr);
+
+	std::vector<Point> non_hidden_points;
+  	for (Regular::Vertex_handle v : Rtr.finite_vertex_handles())
+  		non_hidden_points.push_back(Point(v->point()));	
+	printRegularOFF(Rtr, non_hidden_points, output_file);
+
+	Delaunay T(non_hidden_points.begin(), non_hidden_points.end());
+	printDelaunayOFF(T, non_hidden_points, output_file);
+	CGAL::draw(T);
 	
+	ConstrainedTriangulation Tr_from_regular;
+	Tr_from_regular.insert(non_hidden_points.begin(), non_hidden_points.end());
+	printRandomOFF(Tr_from_regular, non_hidden_points, output_file);
+	CGAL::draw(Tr_from_regular);
+
+
 	// Random Constrained Triangulation generation
 	ConstrainedTriangulation Tr;
 	auto tb_randomTr = std::chrono::high_resolution_clock::now();
@@ -375,12 +476,14 @@ int main(int argc, char **argv) {
 	//printConstrainedTriangulation(Tr, boundary, output_file);
 	//CGAL::draw(Tr);
 	
+
 	//Delaunay triangulation generation without constraints
 	Delaunay dt2;
 	auto tb_delaunayTR = std::chrono::high_resolution_clock::now();
 	dt2.insert(points.begin(),points.end());
 	auto te_delaunayTR = std::chrono::high_resolution_clock::now();
 	uint t_delaunayTR = std::chrono::duration_cast<std::chrono::milliseconds>(te_delaunayTR - tb_delaunayTR).count(); 
+	//CGAL::draw(dt2);
 
 	//Constrained Delaunay triangulation generation
 	ConstrainedDelaunay CDT;
@@ -389,6 +492,7 @@ int main(int argc, char **argv) {
 	CDT.insert_constraint(boundary.begin(), boundary.end(), true);
 	auto te_constrainedDelaunayTR = std::chrono::high_resolution_clock::now();
 	uint t_constrainedDelaunayTR = std::chrono::duration_cast<std::chrono::milliseconds>(te_constrainedDelaunayTR - tb_constrainedDelaunayTR).count();
+	printConstrainedTriangulation(CDT, boundary, output_file);
 	//CGAL::draw(CDT);
 
 	//Voronoi diagram generation with constrains
