@@ -25,7 +25,7 @@
 #include <cstdlib> 
 #include <cctype>
 #include <iomanip>
-
+#include <set>
 
 struct ElementInfo
 {
@@ -334,6 +334,48 @@ void printRandomOFF(ConstrainedTriangulation Tr, std::vector<Point> points, std:
 	outfile.close();
 }
 
+void printVoronoiOFF(std::vector<std::vector<Point>> voronoi_mesh, std::string output_file){
+	std::set<Point> unique_points;
+
+	//Generate a set with unique points in nlogn time
+	for(auto region: voronoi_mesh){
+		for(auto p : region){
+			unique_points.insert(p);
+		}
+	}
+	std::ofstream outfile(output_file + "_voronoi.off");
+	outfile<<"OFF"<<std::endl;
+	outfile<<unique_points.size()<<" "<<voronoi_mesh.size()<<" "<<0<<std::endl;
+
+  	for (auto v : unique_points){
+		outfile<<v.x()<<" "<<v.y()<<" "<<0<<std::endl;
+	}
+
+	//int index = 0;
+	for(auto region : voronoi_mesh){
+		outfile<<region.size()<<" ";
+		for(auto point : region){
+			int v1 = std::distance(unique_points.begin(), std::find(unique_points.begin(), unique_points.end(), point) );
+			outfile<<v1<<" ";
+		}
+		//std::cout<<"printing region "<<index++<<std::endl;
+		outfile<<std::endl;
+	}
+
+	//for (auto it = Tr.finite_faces_begin(); it != Tr.finite_faces_end(); it++)
+	//{
+	//	int v1 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(0)->point()) );
+	//	int v2 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(1)->point()) );
+	//	int v3 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(2)->point()) );
+	//	outfile<<"3 "<<v1<<" "<<v2<<" "<<v3<<std::endl;
+	//}
+	outfile.close();
+
+
+}
+
+
+
 // Cut a Voronoi edge with a given boundary
 //The boundary is assumed to be polygon in ccw, 
 //boundary is a vector with the segments of the boundary and the boundary_points is a vector with the points of the boundary
@@ -438,17 +480,21 @@ int main(int argc, char **argv) {
 		boundary_segments.push_back(s);
 	}
 
+/*
 	std::default_random_engine myRandomEngine(seed);
     // Initialize a uniform_int_distribution to produce values between -10 and 10
-    std::uniform_int_distribution<int> myUnifIntDist(-12, 12);
+    //std::uniform_int_distribution<int> myUnifIntDist(-12, 12);
+	std::uniform_int_distribution<int> myUnifIntDist(0, 10000000);
     
 	std::vector<Wpoint> weighted_points(points.size());
 	for(size_t i = 0; i < points.size(); i++){
 		weighted_points[i] = Wpoint(points[i], myUnifIntDist(myRandomEngine));
 	}
-
+	
 	//Regular triangulation generation
 	Regular Rtr(weighted_points.begin(), weighted_points.end());
+
+	//std::cout<<"number triangles "<< Rtr.number_of_faces()<<std::endl;
 	CGAL::draw(Rtr);
 
 	std::vector<Point> non_hidden_points;
@@ -464,7 +510,7 @@ int main(int argc, char **argv) {
 	Tr_from_regular.insert(non_hidden_points.begin(), non_hidden_points.end());
 	printRandomOFF(Tr_from_regular, non_hidden_points, output_file);
 	CGAL::draw(Tr_from_regular);
-
+*/
 
 	// Random Constrained Triangulation generation
 	ConstrainedTriangulation Tr;
@@ -531,6 +577,11 @@ int main(int argc, char **argv) {
 	auto te_cutVoronoi = std::chrono::high_resolution_clock::now();
 	uint t_cutVoronoi = std::chrono::duration_cast<std::chrono::milliseconds>(te_cutVoronoi - tb_cutVoronoi).count();
 	
+	printVoronoiOFF(voronoi_mesh, output_file);
+
+
+
+
 //	for (auto region : voronoi_mesh){
 //		std::cout<<"Region: ";
 //		for(auto point : region){
@@ -540,12 +591,12 @@ int main(int argc, char **argv) {
 //	}
 //	CGAL::draw(vd);
 
-	//std::cout<<"Random Constrained Triangulation: "<<t_randomTr<<" ms"<<std::endl;
-	//std::cout<<"Delaunay Triangulation: "<<t_delaunayTR<<" ms"<<std::endl;
-	//std::cout<<"Constrained Delaunay Triangulation: "<<t_constrainedDelaunayTR<<" ms"<<std::endl;
-	//std::cout<<"Voronoi adaptator: "<<t_voronoiAdaptator<<" ms"<<std::endl;
-	//std::cout<<"Cut Voronoi: "<<t_cutVoronoi<<" ms"<<std::endl;
-	//std::cout<<"Constrained Voronoi: "<<t_voronoiAdaptator+t_cutVoronoi<<" ms"<<std::endl;
+	std::cout<<"Random Constrained Triangulation: "<<t_randomTr<<" ms"<<std::endl;
+	std::cout<<"Delaunay Triangulation: "<<t_delaunayTR<<" ms"<<std::endl;
+	std::cout<<"Constrained Delaunay Triangulation: "<<t_constrainedDelaunayTR<<" ms"<<std::endl;
+	std::cout<<"Voronoi adaptator: "<<t_voronoiAdaptator<<" ms"<<std::endl;
+	std::cout<<"Cut Voronoi: "<<t_cutVoronoi<<" ms"<<std::endl;
+	std::cout<<"Constrained Voronoi: "<<t_voronoiAdaptator+t_cutVoronoi<<" ms"<<std::endl;
 
 	std::cout<<t_randomTr<<" "<<t_delaunayTR<<" "<<t_constrainedDelaunayTR<<" "<<t_voronoiAdaptator<<" "<<t_cutVoronoi<<" "<<t_voronoiAdaptator+t_cutVoronoi<<std::endl;
 
