@@ -472,8 +472,8 @@ int main(int argc, char **argv) {
 
 	//Shuffle points
 	std::shuffle( points.begin(), points.end(), std::default_random_engine(seed));
-	//std::vector<Point> boundary = { Point(0.0,0.0), Point(1.0,0.0), Point(1.0,1.0), Point(-1.0,1.0), Point(-1.0,-1.0), Point(0.0,-1.0) };
-	std::vector<Point> boundary = { Point(0.0,0.0), Point(10000.0,0.0), Point(10000.0,10000.0), Point(0.0,10000.0) };
+	std::vector<Point> boundary = { Point(0.0,0.0), Point(1.0,0.0), Point(1.0,1.0), Point(-1.0,1.0), Point(-1.0,-1.0), Point(0.0,-1.0) };
+	//std::vector<Point> boundary = { Point(0.0,0.0), Point(10000.0,0.0), Point(10000.0,10000.0), Point(0.0,10000.0) };
 	std::vector<Segment_2> boundary_segments;
 	for(int i = 0; i < boundary.size(); i++){
 		Segment_2 s(boundary[i], boundary[ (i + 1) % boundary.size()]);
@@ -570,17 +570,13 @@ int main(int argc, char **argv) {
 				face.erase(face.begin() + (i+1)%face.size());
 			}
 		}
-
-		voronoi_mesh.push_back(face);	
-		//std::cout<<" "<<std::endl;
+		if(face.size() > 0)
+			voronoi_mesh.push_back(face);
 	}
 	auto te_cutVoronoi = std::chrono::high_resolution_clock::now();
 	uint t_cutVoronoi = std::chrono::duration_cast<std::chrono::milliseconds>(te_cutVoronoi - tb_cutVoronoi).count();
 	
 	printVoronoiOFF(voronoi_mesh, output_file);
-
-
-
 
 //	for (auto region : voronoi_mesh){
 //		std::cout<<"Region: ";
