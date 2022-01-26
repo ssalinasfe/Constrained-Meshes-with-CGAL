@@ -362,19 +362,10 @@ void printVoronoiOFF(std::vector<std::vector<Point>> voronoi_mesh, std::string o
 		outfile<<std::endl;
 	}
 
-	//for (auto it = Tr.finite_faces_begin(); it != Tr.finite_faces_end(); it++)
-	//{
-	//	int v1 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(0)->point()) );
-	//	int v2 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(1)->point()) );
-	//	int v3 = std::distance(points.begin(), std::find(points.begin(), points.end(), it->vertex(2)->point()) );
-	//	outfile<<"3 "<<v1<<" "<<v2<<" "<<v3<<std::endl;
-	//}
 	outfile.close();
 
 
 }
-
-
 
 // Cut a Voronoi edge with a given boundary
 //The boundary is assumed to be polygon in ccw, 
@@ -458,6 +449,34 @@ std::vector<Point> cut_halfedge(VD &vd, VD::Halfedge_handle e, std::vector<Segme
 	}
 //	std::cout << std::endl;
 	return constrained_region;
+}
+
+std::vector<std::vector<Point>> cut_voronoi(VD &vd, std::vector<Segment_2> &boundary_segments, std::vector<Point> &boundary){
+	std::vector<std::vector<Point>> voronoi_mesh;
+	for(VD::Face_iterator fit = vd.faces_begin(); fit!=vd.faces_end();++fit){
+		VD::Face f = *fit;
+		VD::Ccb_halfedge_circulator ec_start = f.ccb(); //Start the circulator at the first edge of face
+		VD::Ccb_halfedge_circulator ec = ec_start; 
+		std::vector<Point> face;
+		//std::cout<<"Region: "<<std::endl;
+		do { //Loop through the edges of the face
+        	std::vector<Point> boundary_vertices = cut_halfedge(vd, ec, boundary_segments, boundary); //Cut the region
+			face.insert(face.end(), boundary_vertices.begin(), boundary_vertices.end());
+      	}while ( ++ec != ec_start ); 
+		// Remove colliniear points, this is to avoid the problem of degenerate faces do to the adittion of boundary points
+		for (size_t i = 0; i < face.size(); i++)
+		{
+			Point p1 = face[i];
+			Point p2 = face[(i+1)%face.size()];
+			Point p3 = face[(i+2)%face.size()];
+			if(CGAL::collinear(p1,p2,p3)){ 
+				face.erase(face.begin() + (i+1)%face.size());
+			}
+		}
+		if(face.size() > 0)
+			voronoi_mesh.push_back(face);
+	}
+	return voronoi_mesh;
 }
 
 int main(int argc, char **argv) {
@@ -547,32 +566,10 @@ int main(int argc, char **argv) {
 	vd.insert(points.begin(),points.end());
 	auto te_voronoiAdaptator = std::chrono::high_resolution_clock::now();
 	uint t_voronoiAdaptator = std::chrono::duration_cast<std::chrono::milliseconds>(te_voronoiAdaptator - tb_voronoiAdaptator).count();
-	std::vector<std::vector<Point>> voronoi_mesh;
-	//Cur Voronoi faces and store it a vector of vectors
+	
+	//Cut Voronoi faces and store it a vector of vectors
 	auto tb_cutVoronoi = std::chrono::high_resolution_clock::now();
-	for(VD::Face_iterator fit = vd.faces_begin(); fit!=vd.faces_end();++fit){
-		VD::Face f = *fit;
-		VD::Ccb_halfedge_circulator ec_start = f.ccb(); //Start the circulator at the first edge of face
-		VD::Ccb_halfedge_circulator ec = ec_start; 
-		std::vector<Point> face;
-		//std::cout<<"Region: "<<std::endl;
-		do { //Loop through the edges of the face
-        	std::vector<Point> boundary_vertices = cut_halfedge(vd, ec, boundary_segments, boundary); //Cut the region
-			face.insert(face.end(), boundary_vertices.begin(), boundary_vertices.end());
-      	}while ( ++ec != ec_start ); 
-		// Remove colliniear points, this is to avoid the problem of degenerate faces do to the adittion of boundary points
-		for (size_t i = 0; i < face.size(); i++)
-		{
-			Point p1 = face[i];
-			Point p2 = face[(i+1)%face.size()];
-			Point p3 = face[(i+2)%face.size()];
-			if(CGAL::collinear(p1,p2,p3)){ 
-				face.erase(face.begin() + (i+1)%face.size());
-			}
-		}
-		if(face.size() > 0)
-			voronoi_mesh.push_back(face);
-	}
+	std::vector<std::vector<Point>> voronoi_mesh = cut_voronoi(vd, boundary_segments, boundary);
 	auto te_cutVoronoi = std::chrono::high_resolution_clock::now();
 	uint t_cutVoronoi = std::chrono::duration_cast<std::chrono::milliseconds>(te_cutVoronoi - tb_cutVoronoi).count();
 	
