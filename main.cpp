@@ -130,6 +130,7 @@ std::vector<Point> read_nodes_from_file(std::string name){
 
 //Print off file based in a Triangulation_2, the file name and the number of interior faces
 void print_off(ConstrainedTriangulation Tr, std::string name, int n_faces){
+		std::cout << "Printing off file" << std::endl;
 		std::ofstream outfile(name + ".1.off");
 		outfile << "OFF" << std::endl;
 		outfile << Tr.number_of_vertices() << " " << n_faces << " " << 0 << std::endl;
@@ -141,20 +142,24 @@ void print_off(ConstrainedTriangulation Tr, std::string name, int n_faces){
 				outfile << 3 << " " << f->vertex(0)->info().index << " " << f->vertex(1)->info().index << " " << f->vertex(2)->info().index << std::endl;
 		}
 		outfile.close();
+		std::cout << "Off file printed as "<< name << ".1.off" << std::endl;
 }
 
 //Print a node file based in a Triangulation_2, the file name and the number of interior faces
 void print_node_file(ConstrainedTriangulation Tr, std::string name){
+		std::cout<<"Printing node file"<<std::endl;
 		std::ofstream outfile(name + ".1.node");
 		outfile << Tr.number_of_vertices() <<" 2 0 1"<< std::endl;
 		for(ConstrainedTriangulation::Vertex_handle v : Tr.finite_vertex_handles()){
 				outfile << v->info().index<<" "<< std::setprecision(15)<< v->point().x() << " " << v->point().y() << " "<<v->info().border << std::endl;
 		}
 		outfile.close();
+		std::cout<<"Node file printed as "<<name + ".1.node"<<std::endl;
 }
 
 //Print triangle file based in a Triangulation_2, the file name and the number of interior faces
 void print_ele_file(ConstrainedTriangulation Tr, std::string name, int n_faces){
+		std::cout<<"Printing ele file"<<std::endl;
 		std::ofstream outfile(name + ".1.ele");
 		outfile << n_faces <<" 3 0"<< std::endl;
 		for(ConstrainedTriangulation::Face_handle f : Tr.finite_face_handles()){
@@ -162,10 +167,12 @@ void print_ele_file(ConstrainedTriangulation Tr, std::string name, int n_faces){
 						outfile << f->info().index << " " << f->vertex(0)->info().index << " " << f->vertex(1)->info().index << " " << f->vertex(2)->info().index << std::endl;
 		}
 		outfile.close();
+		std::cout<<"Ele file printed as "<<name + ".1.ele"<<std::endl;
 }
 
 //Print a adjacency file based in a Triangulation_2, the file name and the number of interior faces
 void print_neigh_file(ConstrainedTriangulation Tr, std::string name, int n_faces){
+	printf("Printing neigh file\n");
 	std::ofstream outfile(name + ".1.neigh");
 	outfile << n_faces <<" 3"<< std::endl;
 	for(ConstrainedTriangulation::Face_handle f : Tr.finite_face_handles()){
@@ -174,6 +181,7 @@ void print_neigh_file(ConstrainedTriangulation Tr, std::string name, int n_faces
 			}
 	}
 	outfile.close();
+	printf("Neigh file printed as %s.1.neigh\n", name.c_str());
 }
 
 
@@ -190,6 +198,7 @@ bool check_inside(Point pt, std::vector<Point> boundary, K traits)
 	return false;
 }
 
+
 //Print a constrained Triangulation TR with a constrained boundaryu as a node file, ele file, neigh file and off file for vizualization
 void printConstrainedTriangulation(ConstrainedTriangulation Tr, std::vector<Point> boundary, std::string output_file){
 	int index = 0;
@@ -205,6 +214,7 @@ void printConstrainedTriangulation(ConstrainedTriangulation Tr, std::vector<Poin
 	}
 
 	index = 0;
+	// Calcula mid point of each edge of the face, to check if the face is inside the boundary
 	for(ConstrainedTriangulation::Face_handle f : Tr.all_face_handles()){
 		if(!Tr.is_infinite(f)){
 			auto v0 = f->vertex(0)->point();
@@ -232,6 +242,39 @@ void printConstrainedTriangulation(ConstrainedTriangulation Tr, std::vector<Poin
 	print_neigh_file(Tr, output_file, index);
 	//std::cout<<"Printed files in "<<output_file<<std::endl;
 }
+
+//Print a print triangulation with the .node, ele and neigh. files. It uses ConstrainedDelunay, but it is not a constrained triangulation
+void printDelaunayTriangulation(ConstrainedDelaunay Tr, std::string output_file){
+	int index = 0;
+	for(ConstrainedDelaunay::Vertex_handle v : Tr.finite_vertex_handles()) {
+		v->info().index = index;
+		index++;
+	}
+
+	for (Constrained_edges_iterator it = Tr.constrained_edges_begin(); it != Tr.constrained_edges_end(); ++it) {
+		Edge e = *it;
+		e.first->vertex( (e.second+1)%3 )->info().border=true;
+		e.first->vertex( (e.second+2)%3 )->info().border=true;
+	}
+
+	index = 0;
+	for(ConstrainedDelaunay::Face_handle f : Tr.all_face_handles()){
+		if(!Tr.is_infinite(f)){
+			f->info().index = index;
+			index++;
+		}else{
+			f->info().index = -1;
+		}
+	}
+
+	//std::cout<<"Printing mesh with "<<index<<" faces and "<< Tr.number_of_vertices() <<" vertices"<<std::endl;
+	print_off(Tr, output_file, index);
+	print_node_file(Tr, output_file);
+	print_ele_file(Tr, output_file, index);
+	print_neigh_file(Tr, output_file, index);
+	//std::cout<<"Printed files in "<<output_file<<std::endl;
+}
+
 
 //Print a constrained Triangulation TR with a constrained boundaryu as a node file, ele file, neigh file and off file for vizualization
 void printConstrainedTriangulation(ConstrainedDelaunay Tr, std::vector<Point> boundary, std::string output_file){
@@ -598,19 +641,25 @@ int main(int argc, char **argv) {
 */
 
 	//Read nodes and output file name
-	std::cout<<"Reading file "<<input_file<<std::endl;
+	std::cout<<"Reading file "<<argv[1]<<std::endl;
 	std::vector<Point> points = read_nodes_from_file(argv[1]); 
+
 	std::string output_file = std::string(argv[2]);
 
 
 	std::cout<<"Read "<<points.size()<<" points from file "<<argv[1]<<std::endl;
+	std::cout<<"Generating Delaunay triangulation"<<std::endl;
 
-	//Delaunay triangulation generation without constraints
-	Delaunay dt2;
-	auto tb_delaunayTR = std::chrono::high_resolution_clock::now();
-	dt2.insert(points.begin(),points.end());
-	auto te_delaunayTR = std::chrono::high_resolution_clock::now();
-	uint t_delaunayTR = std::chrono::duration_cast<std::chrono::milliseconds>(te_delaunayTR - tb_delaunayTR).count(); 
+	//Constrained Delaunay triangulation generation
+	ConstrainedDelaunay CDT;
+	auto tb_constrainedDelaunayTR = std::chrono::high_resolution_clock::now();
+	CDT.insert(points.begin(),points.end());
+	auto te_constrainedDelaunayTR = std::chrono::high_resolution_clock::now();
+	uint t_constrainedDelaunayTR = std::chrono::duration_cast<std::chrono::milliseconds>(te_constrainedDelaunayTR - tb_constrainedDelaunayTR).count();
+	std::cout<<"Generated Delaunay Triangulation in "<<t_constrainedDelaunayTR<<" ms"<<std::endl;
+
+	printDelaunayTriangulation(CDT, output_file);
+
 //	CGAL::draw(dt2);
 
 	return EXIT_SUCCESS;

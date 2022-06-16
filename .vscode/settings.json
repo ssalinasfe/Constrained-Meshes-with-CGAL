@@ -65,6 +65,13 @@
         "mutex": "cpp",
         "__functional_03": "cpp",
         "*.ipp": "cpp",
-        "__config": "cpp"
+        "__config": "cpp",
+        "strstream": "cpp",
+        "condition_variable": "cpp",
+        "numbers": "cpp",
+        "optional": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "variant": "cpp"
     }
 }
