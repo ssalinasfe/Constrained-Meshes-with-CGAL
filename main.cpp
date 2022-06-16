@@ -481,6 +481,8 @@ std::vector<std::vector<Point>> cut_voronoi(VD &vd, std::vector<Segment_2> &boun
 
 int main(int argc, char **argv) {
 
+
+/*
 	//Read nodes and output file name
 	std::vector<Point> points = read_nodes_from_file(argv[1]); 
 	std::string output_file = std::string(argv[2]);
@@ -499,7 +501,7 @@ int main(int argc, char **argv) {
 		boundary_segments.push_back(s);
 	}
 
-/*
+
 	std::default_random_engine myRandomEngine(seed);
     // Initialize a uniform_int_distribution to produce values between -10 and 10
     //std::uniform_int_distribution<int> myUnifIntDist(-12, 12);
@@ -529,7 +531,7 @@ int main(int argc, char **argv) {
 	Tr_from_regular.insert(non_hidden_points.begin(), non_hidden_points.end());
 	printRandomOFF(Tr_from_regular, non_hidden_points, output_file);
 	CGAL::draw(Tr_from_regular);
-*/
+
 
 	// Random Constrained Triangulation generation
 	ConstrainedTriangulation Tr;
@@ -540,7 +542,7 @@ int main(int argc, char **argv) {
 	uint t_randomTr = std::chrono::duration_cast<std::chrono::milliseconds>(te_randomTr - tb_randomTr).count(); 
 	//printConstrainedTriangulation(Tr, boundary, output_file);
 	//CGAL::draw(Tr);
-	
+
 
 	//Delaunay triangulation generation without constraints
 	Delaunay dt2;
@@ -550,6 +552,7 @@ int main(int argc, char **argv) {
 	uint t_delaunayTR = std::chrono::duration_cast<std::chrono::milliseconds>(te_delaunayTR - tb_delaunayTR).count(); 
 	//CGAL::draw(dt2);
 
+
 	//Constrained Delaunay triangulation generation
 	ConstrainedDelaunay CDT;
 	auto tb_constrainedDelaunayTR = std::chrono::high_resolution_clock::now();
@@ -557,7 +560,7 @@ int main(int argc, char **argv) {
 	CDT.insert_constraint(boundary.begin(), boundary.end(), true);
 	auto te_constrainedDelaunayTR = std::chrono::high_resolution_clock::now();
 	uint t_constrainedDelaunayTR = std::chrono::duration_cast<std::chrono::milliseconds>(te_constrainedDelaunayTR - tb_constrainedDelaunayTR).count();
-	printConstrainedTriangulation(CDT, boundary, output_file);
+	//printConstrainedTriangulation(CDT, boundary, output_file);
 	//CGAL::draw(CDT);
 
 	//Voronoi diagram generation with constrains
@@ -573,7 +576,7 @@ int main(int argc, char **argv) {
 	auto te_cutVoronoi = std::chrono::high_resolution_clock::now();
 	uint t_cutVoronoi = std::chrono::duration_cast<std::chrono::milliseconds>(te_cutVoronoi - tb_cutVoronoi).count();
 	
-	printVoronoiOFF(voronoi_mesh, output_file);
+	//printVoronoiOFF(voronoi_mesh, output_file);
 
 //	for (auto region : voronoi_mesh){
 //		std::cout<<"Region: ";
@@ -592,6 +595,23 @@ int main(int argc, char **argv) {
 	std::cout<<"Constrained Voronoi: "<<t_voronoiAdaptator+t_cutVoronoi<<" ms"<<std::endl;
 
 	std::cout<<t_randomTr<<" "<<t_delaunayTR<<" "<<t_constrainedDelaunayTR<<" "<<t_voronoiAdaptator<<" "<<t_cutVoronoi<<" "<<t_voronoiAdaptator+t_cutVoronoi<<std::endl;
+*/
+
+	//Read nodes and output file name
+	std::cout<<"Reading file "<<input_file<<std::endl;
+	std::vector<Point> points = read_nodes_from_file(argv[1]); 
+	std::string output_file = std::string(argv[2]);
+
+
+	std::cout<<"Read "<<points.size()<<" points from file "<<argv[1]<<std::endl;
+
+	//Delaunay triangulation generation without constraints
+	Delaunay dt2;
+	auto tb_delaunayTR = std::chrono::high_resolution_clock::now();
+	dt2.insert(points.begin(),points.end());
+	auto te_delaunayTR = std::chrono::high_resolution_clock::now();
+	uint t_delaunayTR = std::chrono::duration_cast<std::chrono::milliseconds>(te_delaunayTR - tb_delaunayTR).count(); 
+//	CGAL::draw(dt2);
 
 	return EXIT_SUCCESS;
 }
