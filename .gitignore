@@ -7,6 +7,7 @@ data/*
 data/*/*
 
 !data/LRandom.py
+!data/10000x10000RandomPoints.py
 
 .vscode
 .vscode/*
