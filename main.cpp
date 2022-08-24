@@ -9,7 +9,8 @@
 #include <CGAL/Triangulation_vertex_base_with_info_2.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Constrained_triangulation_2.h>
-#include <CGAL/draw_triangulation_2.h>
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
+//#include <CGAL/draw_triangulation_2.h>
 #include <CGAL/intersections.h>
 #include <CGAL/Regular_triangulation_2.h>
 #include <fstream>
@@ -81,7 +82,7 @@ typedef K::Line_2 Line_2;
 #include <CGAL/Voronoi_diagram_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_traits_2.h>
 #include <CGAL/Delaunay_triangulation_adaptation_policies_2.h>
-#include <CGAL/draw_voronoi_diagram_2.h>
+//#include <CGAL/draw_voronoi_diagram_2.h>
 
 // typedefs for defining the adaptor
 typedef CGAL::Delaunay_triangulation_2<K>                                    DT;
@@ -640,7 +641,7 @@ int main(int argc, char **argv) {
 	std::cout<<t_randomTr<<" "<<t_delaunayTR<<" "<<t_constrainedDelaunayTR<<" "<<t_voronoiAdaptator<<" "<<t_cutVoronoi<<" "<<t_voronoiAdaptator+t_cutVoronoi<<std::endl;
 */
 
-	//Read nodes and output file name
+	//Read nodes and output file 
 	std::cout<<"Reading file "<<argv[1]<<std::endl;
 	std::vector<Point> points = read_nodes_from_file(argv[1]); 
 
