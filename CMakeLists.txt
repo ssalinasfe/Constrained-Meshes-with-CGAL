@@ -7,4 +7,4 @@ include_directories(external)
 add_executable(triangulation main.cpp)
 
 
-target_link_libraries(triangulation PUBLIC cgalfiles malloccountfiles ${CMAKE_DL_LIBS} gmp)
+target_link_libraries(triangulation PUBLIC cgalsource  gmp)
