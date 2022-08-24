@@ -72,6 +72,14 @@
         "optional": "cpp",
         "semaphore": "cpp",
         "stop_token": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "forward_list": "cpp",
+        "future": "cpp",
+        "cfenv": "cpp",
+        "cinttypes": "cpp",
+        "malloc_count.h": "c",
+        "malloc_count.c": "cpp"
     }
 }

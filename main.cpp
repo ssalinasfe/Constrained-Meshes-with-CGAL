@@ -1,6 +1,10 @@
 #define BOOST_BIND_NO_PLACEHOLDERS
 
+//Memory usage
+//#include <malloc_count-0.7.1/malloc_count.h>
+#include <malloc_count-0.7.1/malloc_count.c>
 
+// CGAL
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/IO/Color.h>
@@ -644,12 +648,13 @@ int main(int argc, char **argv) {
 	//Read nodes and output file 
 	std::cout<<"Reading file "<<argv[1]<<std::endl;
 	std::vector<Point> points = read_nodes_from_file(argv[1]); 
-
+	
 	std::string output_file = std::string(argv[2]);
-
 
 	std::cout<<"Read "<<points.size()<<" points from file "<<argv[1]<<std::endl;
 	std::cout<<"Generating Delaunay triangulation"<<std::endl;
+
+
 
 	//Constrained Delaunay triangulation generation
 	ConstrainedDelaunay CDT;
@@ -659,9 +664,21 @@ int main(int argc, char **argv) {
 	uint t_constrainedDelaunayTR = std::chrono::duration_cast<std::chrono::milliseconds>(te_constrainedDelaunayTR - tb_constrainedDelaunayTR).count();
 	std::cout<<"Generated Delaunay Triangulation in "<<t_constrainedDelaunayTR<<" ms"<<std::endl;
 
-	printDelaunayTriangulation(CDT, output_file);
+	long long mem_peak = malloc_count_peak();
+	long long mem_current = malloc_count_current();
+	std::cout<<"Memory peak: "<< (long long) mem_peak<<" bytes"<<std::endl;
+	std::cout<<"Memory current: "<< (long long) mem_current<<" bytes"<<std::endl;
 
-//	CGAL::draw(dt2);
+	printDelaunayTriangulation(CDT, output_file);
+	
+	std::ofstream file;
+    file.open(output_file + "_triangulation_info.json");
+	file << "{" << std::endl;
+	file << "\"triangulation_time\": " << t_constrainedDelaunayTR << "," << std::endl;
+	file << "\"memory_usage\": " << mem_peak << "," << std::endl;
+	file << "\"memory_peak\": " << mem_current << std::endl;
+	file << "}" << std::endl;
 
 	return EXIT_SUCCESS;
 }
+
