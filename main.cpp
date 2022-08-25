@@ -241,7 +241,7 @@ void printConstrainedTriangulation(ConstrainedTriangulation Tr, std::vector<Poin
 	}
 
 	//std::cout<<"Printing mesh with "<<index<<" faces and "<< Tr.number_of_vertices() <<" vertices"<<std::endl;
-	print_off(Tr, output_file, index);
+	//print_off(Tr, output_file, index);
 	print_node_file(Tr, output_file);
 	print_ele_file(Tr, output_file, index);
 	print_neigh_file(Tr, output_file, index);
@@ -273,7 +273,7 @@ void printDelaunayTriangulation(ConstrainedDelaunay Tr, std::string output_file)
 	}
 
 	//std::cout<<"Printing mesh with "<<index<<" faces and "<< Tr.number_of_vertices() <<" vertices"<<std::endl;
-	print_off(Tr, output_file, index);
+	//print_off(Tr, output_file, index);
 	print_node_file(Tr, output_file);
 	print_ele_file(Tr, output_file, index);
 	print_neigh_file(Tr, output_file, index);
@@ -655,15 +655,15 @@ int main(int argc, char **argv) {
 	std::cout<<"Generating Delaunay triangulation"<<std::endl;
 
 
-
+	int n_points = 0;
 	//Constrained Delaunay triangulation generation
 	ConstrainedDelaunay CDT;
 	auto tb_constrainedDelaunayTR = std::chrono::high_resolution_clock::now();
-	CDT.insert(points.begin(),points.end());
+	n_points = CDT.insert(points.begin(),points.end());
 	auto te_constrainedDelaunayTR = std::chrono::high_resolution_clock::now();
 	uint t_constrainedDelaunayTR = std::chrono::duration_cast<std::chrono::milliseconds>(te_constrainedDelaunayTR - tb_constrainedDelaunayTR).count();
+	std::cout<<"Constrained Delaunay Triangulation with "<<n_points<<std::endl;
 	std::cout<<"Generated Delaunay Triangulation in "<<t_constrainedDelaunayTR<<" ms"<<std::endl;
-
 	long long mem_peak = malloc_count_peak();
 	long long mem_current = malloc_count_current();
 	std::cout<<"Memory peak: "<< (long long) mem_peak<<" bytes"<<std::endl;
@@ -674,6 +674,7 @@ int main(int argc, char **argv) {
 	std::ofstream file;
     file.open(output_file + "_triangulation_info.json");
 	file << "{" << std::endl;
+	file << "\"n_points\": " << n_points << "," << std::endl;
 	file << "\"triangulation_time\": " << t_constrainedDelaunayTR << "," << std::endl;
 	file << "\"memory_usage\": " << mem_peak << "," << std::endl;
 	file << "\"memory_peak\": " << mem_current << std::endl;
